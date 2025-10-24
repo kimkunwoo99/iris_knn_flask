@@ -7,7 +7,7 @@
 ## 주요 기능  
 - `train_model.py` : `iris` 데이터셋을 로드하고 K-NN 분류기를 학습하여 모델 파일(예: pickle)로 저장.  
 - `app.py` : Flask 기반 웹 서버로, 사용자로부터 꽃의 측정값(꽃받침 길이·넓이, 꽃잎 길이·넓이)을 입력받아 학습된 모델로 품종을 예측하고 결과를 웹 화면에 출력.  
-- `templates/index2.html` : 입력 폼 및 결과 표시를 담당하는 HTML 템플릿.  
+- `templates/index.html` : 입력 폼 및 결과 표시를 담당하는 HTML 템플릿.  
 - `static/images/` : 예측 결과나 설명을 위한 이미지 리소스 저장 폴더.  
 - `model/` : 학습된 모델 파일 및 관련 저장 데이터를 보관하는 폴더 (예: `knn_model.pkl`)  
 
