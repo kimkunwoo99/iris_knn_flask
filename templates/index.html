@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Iris KNN 분류기</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: url("{{ url_for('static', filename='images/background.png') }}") no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.92);
+      padding: 40px 50px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      width: 460px;
+      text-align: center;
+      backdrop-filter: blur(6px);
+    }
+
+    h1 {
+      color: #1e88e5;
+      font-size: 26px;
+      margin-bottom: 25px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
+    }
+
+    form { text-align: left; }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 15px;
+      color: #333;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+
+    input[type="number"]:focus {
+      border-color: #1e88e5;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 25px;
+      background-color: #1e88e5;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #1565c0;
+    }
+
+    .result {
+      margin-top: 30px;
+      background: #f1f8e9;
+      border: 1px solid #aed581;
+      border-radius: 8px;
+      padding: 15px;
+      color: #33691e;
+      font-weight: bold;
+    }
+
+    .flower-img {
+      margin-top: 15px;
+      width: 220px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .sample-boxes {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 25px;
+    }
+
+    .flower-box {
+      flex: 1;
+      margin: 0 5px;
+      border: 2px solid #90caf9;
+      border-radius: 10px;
+      background: #e3f2fd;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .flower-box:hover {
+      transform: scale(1.05);
+      background: #bbdefb;
+    }
+
+    .flower-box img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .flower-box p {
+      margin: 8px 0 0;
+      font-weight: bold;
+      color: #1e88e5;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🌸 붓꽃 품종 예측 (KNN) 🌸</h1>
+
+    <form method="post" id="irisForm">
+      <label>Sepal Length (꽃받침 길이):</label>
+      <input type="number" step="0.01" name="sepal_length" id="sepal_length" required>
+
+      <label>Sepal Width (꽃받침 너비):</label>
+      <input type="number" step="0.01" name="sepal_width" id="sepal_width" required>
+
+      <label>Petal Length (꽃잎 길이):</label>
+      <input type="number" step="0.01" name="petal_length" id="petal_length" required>
+
+      <label>Petal Width (꽃잎 너비):</label>
+      <input type="number" step="0.01" name="petal_width" id="petal_width" required>
+
+      <button type="submit">🌼 예측하기</button>
+    </form>
+
+    {% if prediction %}
+      <div class="result">
+        예측 결과: {{ prediction }}
+        <div>
+          {% if prediction == 'setosa' %}
+            <img src="{{ url_for('static', filename='images/setosa.png') }}" class="flower-img" alt="setosa">
+          {% elif prediction == 'versicolor' %}
+            <img src="{{ url_for('static', filename='images/versicolor.png') }}" class="flower-img" alt="versicolor">
+          {% elif prediction == 'virginica' %}
+            <img src="{{ url_for('static', filename='images/virginica.png') }}" class="flower-img" alt="virginica">
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- ✅ 클릭 시 자동입력되는 박스 영역 -->
+    <div class="sample-boxes">
+      <div class="flower-box" onclick="fillValues('setosa')">
+        <img src="{{ url_for('static', filename='images/setosa.png') }}" alt="setosa">
+        <p>Setosa</p>
+      </div>
+      <div class="flower-box" onclick="fillValues('versicolor')">
+        <img src="{{ url_for('static', filename='images/versicolor.png') }}" alt="versicolor">
+        <p>Versicolor</p>
+      </div>
+      <div class="flower-box" onclick="fillValues('virginica')">
+        <img src="{{ url_for('static', filename='images/virginica.png') }}" alt="virginica">
+        <p>Virginica</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🌼 JavaScript: 클릭 시 값 자동 입력 -->
+  <script>
+    function fillValues(type) {
+      const values = {
+        setosa:     { sepal_length: 5.0, sepal_width: 3.5, petal_length: 1.4, petal_width: 0.2 },
+        versicolor: { sepal_length: 6.0, sepal_width: 2.9, petal_length: 4.5, petal_width: 1.5 },
+        virginica:  { sepal_length: 6.5, sepal_width: 3.0, petal_length: 5.5, petal_width: 2.0 }
+      };
+      const v = values[type];
+      document.getElementById("sepal_length").value = v.sepal_length;
+      document.getElementById("sepal_width").value  = v.sepal_width;
+      document.getElementById("petal_length").value = v.petal_length;
+      document.getElementById("petal_width").value  = v.petal_width;
+    }
+  </script>
+</body>
+</html>
